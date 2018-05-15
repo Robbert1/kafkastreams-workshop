@@ -1,10 +1,7 @@
 package com.jdriven.kafkaworkshop;
 
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,13 +9,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import static com.jdriven.kafkaworkshop.TopicNames.RECEIVED_SENSOR_DATA;
 
 @Controller
 public class SensorController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SensorController.class);
+    private KafkaTemplate<String, SensorData> kafkaTemplate;
+
+    public SensorController(final KafkaTemplate<String, SensorData> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     @GetMapping("/sensor")
     public String greetingForm(Model model) {
@@ -28,7 +29,7 @@ public class SensorController {
 
     @PostMapping("/sensor")
     public String sensorSubmit(@ModelAttribute SensorData sensorData) {
-        LOGGER.info("TODO submit data with spring kafkaTemplate");
+        kafkaTemplate.send(RECEIVED_SENSOR_DATA, sensorData.getId(), sensorData);
         return "sensor";
     }
 
